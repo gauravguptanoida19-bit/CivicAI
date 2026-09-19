@@ -7,6 +7,7 @@ import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
 import path from 'path'
+import fs from 'fs'
 
 import { config } from './config'
 import { logger } from './utils/logger'
@@ -36,12 +37,30 @@ const io = new SocketIOServer(server, {
 setupSockets(io)
 
 // Middleware
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}))
 app.use(cors({ origin: '*', credentials: true }))
 app.use(compression())
 app.use(express.json({ limit: '20mb' }))
 app.use(express.urlencoded({ extended: true, limit: '20mb' }))
 app.use(morgan('dev'))
+
+// Locate frontend dist directory
+const possibleDistPaths = [
+  path.resolve(__dirname, '../../frontend/dist'),
+  path.resolve(process.cwd(), '../frontend/dist'),
+  path.resolve(process.cwd(), 'frontend/dist'),
+  path.resolve(__dirname, '../frontend/dist'),
+]
+const frontendDist = possibleDistPaths.find((p) => fs.existsSync(p)) || possibleDistPaths[0]
+
+// Serve static frontend assets
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist))
+  logger.info(`Serving frontend static build from: ${frontendDist}`)
+}
 
 // Serve static uploads
 app.use('/uploads', express.static(config.uploads.dir))
@@ -55,9 +74,40 @@ app.use('/api/analytics', analyticsRoutes)
 app.use('/api/departments', departmentRoutes)
 app.use('/api/users', userRoutes)
 
-// 404 handler
-app.use((_req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' })
+// Root API information endpoint
+app.get('/api', (_req, res) => {
+  res.json({
+    name: 'CivicAI Platform API',
+    status: 'online',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      issues: '/api/issues',
+      ai: '/api/ai/query',
+      analytics: '/api/analytics',
+      departments: '/api/departments',
+      users: '/api/users',
+    },
+  })
+})
+
+// 404 for undefined API routes
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ success: false, message: `API route '${req.originalUrl}' not found` })
+})
+
+// Client-side SPA routing fallback for all other routes
+app.get('*', (_req, res) => {
+  const indexPath = path.join(frontendDist, 'index.html')
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath)
+  } else {
+    res.status(404).json({
+      success: false,
+      message: 'Frontend build not found. Please build frontend with npm run build.',
+    })
+  }
 })
 
 // Centralized error handler
@@ -86,8 +136,9 @@ async function startServer() {
 
     server.listen(config.port, config.host, () => {
       logger.info(`=======================================================`)
-      logger.info(`  CivicAI Backend Server running on http://${config.host}:${config.port}`)
-      logger.info(`  Health Check: http://localhost:${config.port}/api/health`)
+      logger.info(`  CivicAI Server running on http://${config.host}:${config.port}`)
+      logger.info(`  Web Application: http://localhost:${config.port}/`)
+      logger.info(`  API Health: http://localhost:${config.port}/api/health`)
       logger.info(`  Mode: ${config.env} | Demo Store: Active`)
       logger.info(`=======================================================`)
     })
