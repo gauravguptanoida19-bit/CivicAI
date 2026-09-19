@@ -134,21 +134,36 @@ export function LandingPage() {
               An AI-powered civic intelligence platform that automatically detects, classifies, prioritizes, and manages infrastructure problems across cities — from potholes to broken streetlights.
             </motion.p>
 
-            <motion.div custom={4} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register">
-                <Button size="xl" className="bg-white text-blue-900 hover:bg-blue-50 gap-2 w-full sm:w-auto">
-                  Report an Issue
-                  <ArrowRight className="h-5 w-5" />
-                </Button>
+            <motion.div custom={4} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link to="/register" className="w-full sm:w-auto">
+                <button
+                  type="button"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base transition-all duration-200 shadow-lg shadow-black/20 hover:shadow-xl hover:scale-105 cursor-pointer"
+                  style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                >
+                  <span style={{ color: '#0f172a' }}>Report an Issue</span>
+                  <ArrowRight className="h-5 w-5" style={{ color: '#0f172a' }} />
+                </button>
               </Link>
-              <Link to="/login" onClick={() => {
-                // Pre-fill admin credentials for demo
-                localStorage.setItem('demo-hint', 'admin')
-              }}>
-                <Button size="xl" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-2 w-full sm:w-auto">
-                  Explore Command Center
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
+              <Link
+                to="/login"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  localStorage.setItem('demo-hint', 'admin')
+                }}
+              >
+                <button
+                  type="button"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base transition-all duration-200 border shadow-md hover:scale-105 cursor-pointer backdrop-blur-md"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    color: '#ffffff',
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  }}
+                >
+                  <span style={{ color: '#ffffff' }}>Explore Command Center</span>
+                  <ChevronRight className="h-5 w-5" style={{ color: '#ffffff' }} />
+                </button>
               </Link>
             </motion.div>
 
@@ -342,16 +357,28 @@ export function LandingPage() {
           <p className="text-blue-300 text-lg mb-8">
             The full demo runs in under 3 minutes. No setup required.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button size="xl" className="bg-white text-blue-900 hover:bg-blue-50 w-full sm:w-auto">
-                Start as Citizen
-              </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link to="/register" className="w-full sm:w-auto">
+              <button
+                type="button"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base transition-all duration-200 shadow-lg shadow-black/20 hover:shadow-xl hover:scale-105 cursor-pointer"
+                style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+              >
+                <span style={{ color: '#0f172a' }}>Start as Citizen</span>
+              </button>
             </Link>
-            <Link to="/login">
-              <Button size="xl" variant="outline" className="border-white/30 text-white hover:bg-white/10 w-full sm:w-auto">
-                Open Admin Center
-              </Button>
+            <Link to="/login" className="w-full sm:w-auto">
+              <button
+                type="button"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-base transition-all duration-200 border shadow-md hover:scale-105 cursor-pointer backdrop-blur-md"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  color: '#ffffff',
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <span style={{ color: '#ffffff' }}>Open Admin Center</span>
+              </button>
             </Link>
           </div>
         </div>
