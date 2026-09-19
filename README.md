@@ -2,6 +2,7 @@
 
 > *"See the Problem. Understand the Impact. Fix It Faster."*
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-2ea44f.svg)](https://gauravguptanoida19-bit.github.io/CivicAI/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.0-646cff.svg)](https://vitejs.dev/)
@@ -11,6 +12,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 CivicAI is a production-grade, hackathon-ready smart city civic intelligence platform. It bridges citizens, municipal departments, and city leadership through AI-driven computer vision, automated multi-factor severity scoring, geospatial issue mapping, duplicate detection, and generative AI incident triage and reporting.
+
+🌐 **Live Application**: [https://gauravguptanoida19-bit.github.io/CivicAI/](https://gauravguptanoida19-bit.github.io/CivicAI/)  
+📂 **Repository**: [https://github.com/gauravguptanoida19-bit/CivicAI](https://github.com/gauravguptanoida19-bit/CivicAI)
 
 The system features **zero-friction execution**: it boots immediately out of the box with realistic seed datasets (100 synthetic civic issues across 10 wards, 8 municipal departments, 4 RBAC users) and graceful in-memory resilient data stores if external databases or ML microservices are offline.
 
