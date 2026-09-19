@@ -1,0 +1,140 @@
+version: '3.9'
+
+services:
+  # PostgreSQL + PostGIS
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: civicai_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-civicai}
+      POSTGRES_USER: ${DB_USER:-civicai_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-civicai_password}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-civicai_user} -d ${DB_NAME:-civicai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: civicai_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-civicai_redis}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB Vector Store
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: civicai_chroma
+    restart: unless-stopped
+    ports:
+      - "${CHROMA_PORT:-8001}:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - ANONYMIZED_TELEMETRY=false
+
+  # ML Service (Python/FastAPI)
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: civicai_ml
+    restart: unless-stopped
+    ports:
+      - "${ML_SERVICE_PORT:-8000}:8000"
+    environment:
+      - ML_DEMO_MODE=${ML_DEMO_MODE:-true}
+      - YOLO_MODEL_PATH=${YOLO_MODEL_PATH:-./models/civic_yolo.pt}
+      - CONFIDENCE_THRESHOLD=${CONFIDENCE_THRESHOLD:-0.4}
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./ml-service/models:/app/models
+      - ./uploads:/app/uploads
+    depends_on:
+      - chromadb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend (Node.js/Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: civicai_backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - BACKEND_PORT=3001
+      - DATABASE_URL=postgresql://${DB_USER:-civicai_user}:${DB_PASSWORD:-civicai_password}@postgres:5432/${DB_NAME:-civicai}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-civicai_redis}@redis:6379
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - ML_SERVICE_URL=http://ml-service:8000
+      - UPLOAD_DIR=/app/uploads
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - SEED_DEMO_DATA=${SEED_DEMO_DATA:-true}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:80
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (React/Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3001
+        - VITE_ML_URL=http://localhost:8000
+        - VITE_SOCKET_URL=http://localhost:3001
+        - VITE_DEMO_MODE=${DEMO_MODE:-true}
+    container_name: civicai_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  chroma_data:
+
+networks:
+  default:
+    name: civicai_network

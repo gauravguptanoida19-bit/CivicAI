@@ -1,0 +1,64 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+dist/
+build/
+.cache/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+*.pyc
+.mypy_cache/
+
+# ML Models (large files)
+ml-service/models/*.pt
+ml-service/models/*.onnx
+ml-service/models/*.pkl
+!ml-service/models/.gitkeep
+
+# Uploads
+uploads/
+!uploads/.gitkeep
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.sql.bak
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.tmp
+*.temp
